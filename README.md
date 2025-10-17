@@ -1,4 +1,4 @@
-# OmniHub / HomeHub
+# OmniHub
 
 This repository contains scaffolding for the HomeHub project: a self-hosted household hub (backend server, web UI, and Flutter app).
 
