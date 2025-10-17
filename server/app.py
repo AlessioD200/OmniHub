@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import logging
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import sqlite3
@@ -28,6 +29,9 @@ def init_db():
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Basic logging configuration so startup messages and errors appear in the journal
+logging.basicConfig(level=logging.INFO)
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -109,6 +113,8 @@ def on_connect():
 if __name__ == '__main__':
     init_db()
     # For a self-hosted Raspberry Pi deployment it's acceptable to allow the
-    # Werkzeug development server; in production you should use eventlet/gevent
-    # or a proper WSGI server. Pass allow_unsafe_werkzeug=True to opt-in.
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)
+    # Werkzeug development server for local/home use. For safety do NOT enable
+    # the interactive debugger in production. We run with debug=False but keep
+    # allow_unsafe_werkzeug so the process starts under systemd.
+    app.logger.info("Starting HomeHub server on 0.0.0.0:5000")
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True)
