@@ -1,0 +1,17 @@
+[Unit]
+Description=HomeHub backend service
+After=network.target
+
+[Service]
+Type=simple
+User=homehub
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/home/homehub/OmniHub/server
+ExecStart=/home/homehub/OmniHub/server/.venv/bin/python /home/homehub/OmniHub/server/app.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

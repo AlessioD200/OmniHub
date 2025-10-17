@@ -108,4 +108,7 @@ def on_connect():
 
 if __name__ == '__main__':
     init_db()
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    # For a self-hosted Raspberry Pi deployment it's acceptable to allow the
+    # Werkzeug development server; in production you should use eventlet/gevent
+    # or a proper WSGI server. Pass allow_unsafe_werkzeug=True to opt-in.
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)
