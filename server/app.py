@@ -4,6 +4,8 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import sqlite3
 import os
+import shutil
+import time
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'data.db')
 
@@ -38,6 +40,53 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Basic logging configuration so startup messages and errors appear in the journal
 logging.basicConfig(level=logging.INFO)
+
+
+def _safe_db_count(path):
+    try:
+        if not os.path.exists(path):
+            return 0
+        conn = sqlite3.connect(path)
+        cur = conn.cursor()
+        cur.execute("SELECT count(*) FROM groceries;")
+        n = cur.fetchone()[0]
+        conn.close()
+        return int(n or 0)
+    except Exception:
+        return 0
+
+
+def _maybe_backup_db(path, backups_dir=None, keep=5):
+    try:
+        if not os.path.exists(path):
+            return
+        if os.path.getsize(path) == 0:
+            return
+        if backups_dir is None:
+            backups_dir = os.path.join(os.path.dirname(__file__), 'backups')
+        os.makedirs(backups_dir, exist_ok=True)
+        ts = time.strftime('%Y%m%d_%H%M%S')
+        dest = os.path.join(backups_dir, f'data.db.{ts}')
+        shutil.copy2(path, dest)
+        # prune old backups, keep most recent `keep`
+        files = sorted([os.path.join(backups_dir, f) for f in os.listdir(backups_dir)], key=os.path.getmtime, reverse=True)
+        for old in files[keep:]:
+            try:
+                os.remove(old)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+# Log DB diagnostics at import so the running service writes this into the journal.
+try:
+    row_count = _safe_db_count(DB_PATH)
+    logging.getLogger('app').info(f"HomeHub DB path={DB_PATH} exists={os.path.exists(DB_PATH)} rows={row_count}")
+    # create a backup only if there is data present (helps preserve state)
+    if row_count > 0:
+        _maybe_backup_db(DB_PATH)
+except Exception:
+    pass
 
 @app.route('/health', methods=['GET'])
 def health():
