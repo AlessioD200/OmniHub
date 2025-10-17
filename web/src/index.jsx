@@ -2,16 +2,16 @@ import React, {useEffect, useState} from 'react';
 import { createRoot } from 'react-dom/client';
 import { io } from 'socket.io-client';
 
-const API = 'http://localhost:5000';
-
+// Use relative paths so the built app works when served from the backend origin
 function App(){
   const [items, setItems] = useState([]);
   useEffect(()=>{
-    fetch(API+'/groceries')
+    fetch('/groceries')
       .then(r=>r.json())
       .then(setItems)
       .catch(console.error);
-    const socket = io(API);
+    // connect to same origin where the page is served
+    const socket = io();
     socket.on('groceries:created', item => setItems(prev => [item, ...prev]));
     socket.on('groceries:updated', item => setItems(prev => prev.map(i=>i.id===item.id?item:i)));
     socket.on('groceries:deleted', obj => setItems(prev => prev.filter(i=>i.id!==obj.id)));
@@ -21,7 +21,7 @@ function App(){
   const add = async ()=>{
     const name = prompt('Item name');
     if(!name) return;
-    await fetch(API+'/groceries', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+    await fetch('/groceries', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
   };
 
   return (
