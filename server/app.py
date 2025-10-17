@@ -63,7 +63,13 @@ def add_grocery():
     row = c.fetchone()
     item = dict(row)
     conn.close()
-    socketio.emit('groceries:created', item, broadcast=True)
+    # emit in a version-compatible way: some server implementations
+    # don't accept the 'broadcast' keyword. Try with broadcast and
+    # fall back to a plain emit.
+    try:
+        socketio.emit('groceries:created', item, broadcast=True)
+    except TypeError:
+        socketio.emit('groceries:created', item)
     return jsonify(item), 201
 
 @app.route('/groceries/<int:gid>', methods=['PUT'])
@@ -88,7 +94,10 @@ def update_grocery(gid):
     if not row:
         return jsonify({'error': 'not found'}), 404
     item = dict(row)
-    socketio.emit('groceries:updated', item, broadcast=True)
+    try:
+        socketio.emit('groceries:updated', item, broadcast=True)
+    except TypeError:
+        socketio.emit('groceries:updated', item)
     return jsonify(item)
 
 @app.route('/groceries/<int:gid>', methods=['DELETE'])
@@ -103,7 +112,10 @@ def delete_grocery(gid):
     c.execute('DELETE FROM groceries WHERE id=?', (gid,))
     conn.commit()
     conn.close()
-    socketio.emit('groceries:deleted', {'id': gid}, broadcast=True)
+    try:
+        socketio.emit('groceries:deleted', {'id': gid}, broadcast=True)
+    except TypeError:
+        socketio.emit('groceries:deleted', {'id': gid})
     return jsonify({'id': gid})
 
 @socketio.on('connect')
