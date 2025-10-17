@@ -43,6 +43,21 @@ logging.basicConfig(level=logging.INFO)
 def health():
     return jsonify({'status': 'ok'})
 
+
+@app.route('/', methods=['GET'])
+def index():
+    # If a static SPA has been built into server/static, serve it. Otherwise
+    # return a small informative HTML page so '/' doesn't 404.
+    static_index = os.path.join(os.path.dirname(__file__), 'static', 'index.html')
+    if os.path.exists(static_index):
+        with open(static_index, 'r', encoding='utf-8') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
+    return (
+        '<html><body><h1>HomeHub</h1><p>Backend is running. See /health and /groceries.</p></body></html>',
+        200,
+        {'Content-Type': 'text/html'},
+    )
+
 @app.route('/groceries', methods=['GET'])
 def list_groceries():
     conn = get_db()
