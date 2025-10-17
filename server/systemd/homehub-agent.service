@@ -1,0 +1,14 @@
+[Unit]
+Description=HomeHub background agent
+After=network.target
+
+[Service]
+Type=simple
+User=homehub
+WorkingDirectory=/home/homehub/OmniHub/server
+ExecStart=/home/homehub/OmniHub/server/.venv/bin/python agent.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
