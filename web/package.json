@@ -1,0 +1,17 @@
+{
+  "name": "homehub-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "parcel src/index.html --open",
+    "build": "parcel build src/index.html"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "socket.io-client": "4.6.1"
+  },
+  "devDependencies": {
+    "parcel": "^2.9.0"
+  }
+}
