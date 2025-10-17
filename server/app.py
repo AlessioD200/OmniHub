@@ -26,8 +26,14 @@ def init_db():
     conn.commit()
     conn.close()
 
-app = Flask(__name__)
-CORS(app)
+def create_app():
+    app = Flask(__name__)
+    CORS(app)
+    return app
+
+
+# Create app and socketio at module import so gunicorn can import them.
+app = create_app()
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Basic logging configuration so startup messages and errors appear in the journal
@@ -124,9 +130,7 @@ def on_connect():
 
 if __name__ == '__main__':
     init_db()
-    # For a self-hosted Raspberry Pi deployment it's acceptable to allow the
-    # Werkzeug development server for local/home use. For safety do NOT enable
-    # the interactive debugger in production. We run with debug=False but keep
-    # allow_unsafe_werkzeug so the process starts under systemd.
+    # For local testing only: run Werkzeug dev server. Production deployments
+    # should start this app via gunicorn + eventlet worker (see systemd unit).
     app.logger.info("Starting HomeHub server on 0.0.0.0:5000")
     socketio.run(app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True)

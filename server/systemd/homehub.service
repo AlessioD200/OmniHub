@@ -7,7 +7,10 @@ Type=simple
 User=homehub
 Environment=PYTHONUNBUFFERED=1
 WorkingDirectory=/home/homehub/OmniHub/server
-ExecStart=/home/homehub/OmniHub/server/.venv/bin/python /home/homehub/OmniHub/server/app.py
+ExecStart=/home/homehub/OmniHub/server/.venv/bin/gunicorn \
+	--worker-class eventlet -w 1 \
+	--bind 0.0.0.0:5000 \
+	"app:app"
 Restart=always
 RestartSec=5
 StandardOutput=journal
